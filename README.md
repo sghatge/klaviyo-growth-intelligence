@@ -2,7 +2,14 @@
 
 An interview portfolio project by Sangram Ghatge: a D2C lifecycle marketing workspace for a fictional custom portrait and artwork store.
 
+## Live interactive demo
+
+**Published app:** https://artflow-ai.streamlit.app/
+
+The free Streamlit Community Cloud edition is deployed from the `streamlit-migration` branch. Open the app and start with the **Abandoned cart** tab to explore the interactive journey simulator.
+
 ## Interactive demo (start here)
+
 Open the **Abandoned cart** tab and press a scenario button:
 - **Recovered by email 2**: shopper ignores email 1, buys the next day. The flow credits the order to email 2.
 - **Never returns**: a high-value cart sees all three emails, including the value-add branch.
@@ -58,13 +65,13 @@ The project database has tables for customer_profiles, campaign_briefs, lifecycl
 
 This project demonstrates practical Klaviyo learning and transferable CRM/marketing automation skills; it is not a claim of prior years of professional Klaviyo platform experience.
 
-
 ## Free Streamlit edition
 
-A Python/Streamlit edition is available on the `streamlit-migration` branch. It preserves the ArtFlow workspace modules and adds a free-hosting deployment path.
+A Python/Streamlit edition is available on the `streamlit-migration` branch. It preserves the ArtFlow workspace modules and provides a free-hosting deployment path.
 
+- **Live app:** https://artflow-ai.streamlit.app/
 - Streamlit app entry point: `streamlit/app.py`
 - Deployment instructions and optional secrets: [STREAMLIT_DEPLOYMENT.md](./STREAMLIT_DEPLOYMENT.md)
-- Deploy on [Streamlit Community Cloud](https://share.streamlit.io/) using branch `streamlit-migration` and main file `streamlit/app.py`.
+- Hosted on [Streamlit Community Cloud](https://share.streamlit.io/).
 
 The original Next.js/Vercel app remains on `main` unchanged. The Streamlit version uses synthetic demo data by default; live Klaviyo, Supabase and Gemini connections are optional.
