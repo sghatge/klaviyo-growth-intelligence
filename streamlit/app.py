@@ -333,9 +333,9 @@ elif page=="Abandoned cart":
     a,b,c=st.columns(3)
     with a: first=st.text_input("First name",d[0]); product=st.text_input("Product",d[1])
     with b: value=st.number_input("Cart value (£)",min_value=0.0,value=float(d[2]),step=5.0); consent=st.toggle("Email marketing consent",value=d[3])
-    with c: offer=st.text_input("Value-add offer","Free digital preview with every order"); order_choice=st.selectbox("Purchase timing",["Never", "20 minutes", "1 hour", "12 hours","25 hours","49 hours","72 hours"],index={None:0,20:1,60:2,720:3,1500:4,2940:5}.get(d[4],0))
-    order_map={"Never":None,"20 minutes":20,"1 hour":60,"12 hours":720,"25 hours":1500,"49 hours":2940,"72 hours":4320}
-    if scenario=="Recovered by email 2": order_choice="25 hours"
+    with c: offer=st.text_input("Value-add offer","Free digital preview with every order"); order_choice=st.selectbox("Purchase timing",["Never", "20 minutes", "1 hour", "12 hours","25 hours","26 hours","49 hours","72 hours"],index={None:0,20:1,60:2,720:3,1500:4,1560:5,2940:6}.get(d[4],0))
+    order_map={"Never":None,"20 minutes":20,"1 hour":60,"12 hours":720,"25 hours":1500,"26 hours":1560,"49 hours":2940,"72 hours":4320}
+    if scenario=="Recovered by email 2": order_choice="26 hours"
     elif scenario=="Buys on their own": order_choice="20 minutes"
     elif scenario=="No email consent": order_choice="Never"
     order_at=order_map[order_choice]
