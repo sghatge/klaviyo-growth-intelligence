@@ -69,10 +69,12 @@ export async function POST(req: NextRequest) {
   try {
     const data = await getOverview();
     const context = buildContext(data);
-    const key = process.env.AI_GATEWAY_API_KEY;
-    const model = process.env.AI_GATEWAY_MODEL;
+    // Vercel automatically provides VERCEL_OIDC_TOKEN to deployments linked to a Vercel project.
+    // An explicit Gateway key remains supported for non-Vercel/local deployments.
+    const key = process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN;
+    const model = process.env.AI_GATEWAY_MODEL || "openai/gpt-4.1-mini";
 
-    if (!key || !model) {
+    if (!key) {
       return NextResponse.json({ answer: fallbackAnswer(message, context), mode: "demo", dataMode: data.mode });
     }
 
