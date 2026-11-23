@@ -1,0 +1,22 @@
+name: Streamlit app syntax check
+
+on:
+  push:
+    branches: [streamlit-migration]
+    paths:
+      - "streamlit/**"
+      - ".github/workflows/streamlit-check.yml"
+  pull_request:
+    paths:
+      - "streamlit/**"
+
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Compile Streamlit app
+        run: python -m py_compile streamlit/app.py
