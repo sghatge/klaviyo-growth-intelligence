@@ -1,19 +1,63 @@
 "use client";
-import {useEffect,useState} from "react";
-import {Activity,ArrowUpRight,Bot,CheckCircle2,ChevronRight,Image as ImageIcon,Mail,Users,Workflow,Plug,RefreshCw,Sparkles,ShieldCheck} from "lucide-react";
-type Tab="Overview"|"Lifecycle flows"|"Campaign studio"|"Customers"|"AI QA"|"Integrations";
-const tabs:Tab[]=["Overview","Lifecycle flows","Campaign studio","Customers","AI QA","Integrations"];
-const flows=[["Welcome series","Subscribed to email list","3 emails","Live"],["Abandoned cart recovery","Added to cart · no order","3 emails","Live"],["Browse abandonment","Viewed product · no cart","2 emails","Draft"],["Post-purchase care","Placed order","3 emails","Live"],["Customer win-back","No purchase in 120 days","2 emails","Draft"],["Review & UGC request","Order delivered","1 email","Live"]];
-const customers=[["Olivia Bennett","olivia.bennett@example.test","Repeat customer","Pet portraits","£428"],["Noah Williams","noah.williams@example.test","High-value","Family portraits","£890"],["Amelia Carter","amelia.carter@example.test","Cart abandoner","Watercolour pet art","£0"],["Oliver Smith","oliver.smith@example.test","First-time buyer","Couple portrait","£149"],["Isla Thompson","isla.thompson@example.test","At risk","Family canvas","£312"]];
-export default function Home(){const [tab,setTab]=useState<Tab>("Overview"),[status,setStatus]=useState<any>({connected:false,message:"Checking…"}),[profiles,setProfiles]=useState<any[]|null>(null),[product,setProduct]=useState("Custom pet portrait"),[audience,setAudience]=useState("First-time subscribers"),[offer,setOffer]=useState("Free digital preview with every order"),[copy,setCopy]=useState<any>(null),[busy,setBusy]=useState(false),[qa,setQa]=useState(false),[supabase,setSupabase]=useState("Not tested"),[notice,setNotice]=useState("");
-useEffect(()=>{fetch("/api/klaviyo/status").then(r=>r.json()).then(setStatus).catch(()=>setStatus({connected:false,message:"Could not check"}));},[]);
-async function generate(){setBusy(true);try{const r=await fetch("/api/ai/copy",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({product,audience,offer})});setCopy(await r.json());}catch{setNotice("Copy generation failed.");}finally{setBusy(false);}}
-async function liveProfiles(){const r=await fetch("/api/klaviyo/profiles"),j=await r.json();if(!r.ok){setNotice(j.error??"Klaviyo profile read failed");return;}setProfiles(j.profiles);setNotice(`Loaded ${j.profiles.length} live profiles.`);}
-return <div className="app"><aside className="sidebar"><div className="brand"><div className="brand-icon"><ImageIcon/></div><div><b>artflow<span>ai</span></b><small>GROWTH INTELLIGENCE</small></div></div><div className="workspace"><div className="avatar">A</div><div><b>ArtFlow Studio</b><small>D2C DEMO WORKSPACE</small></div></div><label className="navlabel">WORKSPACE</label><nav>{tabs.map((t,i)=><button key={t} className={tab===t?"selected":""} onClick={()=>setTab(t)}>{[<Activity/>,<Workflow/>,<Mail/>,<Users/>,<ShieldCheck/>,<Plug/>][i]}{t}</button>)}</nav><div className="sidefoot"><span className={status.connected?"live-dot":"demo-dot"}/><b>{status.connected?"Klaviyo connected":"Demo workspace"}</b><small>{status.message}</small></div></aside><main><header><div><small>ARTFLOW STUDIO　/　{tab.toUpperCase()}</small><h1>{tab==="Overview"?"Good evening, Sangram ✦":tab}</h1></div><div className="topright"><span className={status.connected?"pill live":"pill"}>{status.connected?"LIVE KLAVIYO":"SYNTHETIC DEMO"}</span><div className="avatar">SG</div></div></header>{notice&&<div className="notice">{notice}<button onClick={()=>setNotice("")}>×</button></div>}
-{tab==="Overview"&&<><p className="intro">Your customer lifecycle marketing at a glance.</p><div className="banner"><Sparkles/><div><b>Portfolio demonstration workspace</b><p>All customer and revenue metrics are synthetic sample data, not actual store or Klaviyo results.</p></div><strong>DEMO DATA</strong></div><section className="metrics">{[["Email-attributed revenue","£48,290","+18.6%"],["Flow revenue","£31,870","+22.4%"],["Campaign revenue","£16,420","+12.1%"],["Orders attributed","625","+9.8%"]].map(x=><article className="metric" key={x[0]}><small>{x[0]}</small><h2>{x[1]}</h2><span>↗ {x[2]} vs previous period</span></article>)}</section><div className="grid"><article className="panel"><div className="panelhead"><div><h3>Lifecycle automation</h3><p>Core flows for a personalized artwork store</p></div><button className="textbtn" onClick={()=>setTab("Lifecycle flows")}>View flows <ChevronRight/></button></div>{flows.slice(0,4).map(f=><div className="flowrow" key={f[0]}><div className="flowicon"><Workflow/></div><div className="flowtext"><b>{f[0]}</b><small>{f[1]}</small></div><span className={f[3]==="Live"?"status live":"status"}>{f[3]}</span></div>)}</article><article className="panel insight"><div className="tag"><Bot/> AI GROWTH INSIGHT</div><h3>Make cart recovery more persuasive.</h3><p>Test a reassurance-led message about artist quality and preview approval before offering a discount. Measure recovered orders, not opens alone.</p><button onClick={()=>setTab("Campaign studio")}>Create campaign <ArrowUpRight/></button></article></div></>}
-{tab==="Lifecycle flows"&&<><p className="intro">Six practical lifecycle automations mapped to Klaviyo flow concepts.</p><div className="flowcards">{flows.map(f=><article className="panel flowcard" key={f[0]}><div className="flowicon"><Workflow/></div><span className={f[3]==="Live"?"status live":"status"}>{f[3]}</span><h3>{f[0]}</h3><p>{f[1]}</p><small>{f[2]} · Trigger-based journey</small><div className="journey"><i/> Trigger <i/> Delay <i/> Email <i/> Exit</div></article>)}</div><div className="note">Demo flow definitions only. Activate and test flows inside your own Klaviyo account before using real customer data.</div></>}
-{tab==="Campaign studio"&&<><p className="intro">Create premium, conversion-focused email content for a custom art brand.</p><div className="studio"><section className="panel form"><label>PRODUCT / OFFER<input value={product} onChange={e=>setProduct(e.target.value)}/></label><label>TARGET AUDIENCE<select value={audience} onChange={e=>setAudience(e.target.value)}>{["First-time subscribers","Cart abandoners","Repeat customers","High-value customers","Lapsed customers"].map(x=><option key={x}>{x}</option>)}</select></label><label>OFFER / VALUE PROPOSITION<input value={offer} onChange={e=>setOffer(e.target.value)}/></label><button className="primary" onClick={generate} disabled={busy}>{busy?"Generating…":<><Sparkles/> Generate with AI</>}</button><small>Uses configured Vercel AI Gateway or clearly labelled deterministic demo copy.</small></section><section className="panel preview"><div className="panelhead"><div><h3>Campaign preview</h3><p>Subject, preheader and email body</p></div><Mail/></div>{copy?<><span className="status">{copy.mode==="ai"?"AI GENERATED":"DEMO GENERATED"}</span><h2>{copy.subject}</h2><p className="muted">{copy.preheader}</p><hr/><h3>{copy.headline}</h3><p>{copy.body}</p><button className="primary">{copy.cta}</button><h4>Pre-send recommendations</h4><ul>{(copy.qa??[]).map((x:string)=><li key={x}>{x}</li>)}</ul></>:<div className="empty"><Sparkles/><p>Generate a campaign to see your email copy here.</p></div>}</section></div></>}
-{tab==="Customers"&&<><p className="intro">Understand lifecycle stages, interests and customer value.</p><div className="panel"><div className="panelhead"><div><h3>Customer profiles</h3><p>{profiles?"Live Klaviyo profiles":"Synthetic portfolio customer examples"}</p></div><button className="secondary" onClick={liveProfiles}><RefreshCw/> Load live Klaviyo profiles</button></div><div className="tablewrap"><table><thead><tr><th>CUSTOMER</th><th>EMAIL</th><th>SEGMENT</th><th>INTEREST</th><th>LTV</th></tr></thead><tbody>{(profiles??customers.map(c=>({name:c[0],email:c[1],segment:c[2],interest:c[3],ltv:c[4]}))).map((c:any,i)=><tr key={c.id??i}><td>{c.name??"Klaviyo profile"}</td><td>{c.email}</td><td>{c.segment??"—"}</td><td>{c.interest??"—"}</td><td>{c.ltv??"—"}</td></tr>)}</tbody></table></div></div></>}
-{tab==="AI QA"&&<><p className="intro">A deterministic pre-send checklist with human approval retained as the final gate.</p><div className="panel qa"><h3>Campaign pre-flight validation</h3>{["Audience and consent eligibility verified","Suppression and unsubscribe rules checked","Personalization variables have fallbacks","Subject line and preheader reviewed","All links and tracking parameters validated","Mobile and dark-mode rendering reviewed","Offer terms and landing page verified","Final human approval recorded"].map((x,i)=><label key={x}><input type="checkbox" defaultChecked={i<4}/>{x}</label>)}<button className="primary" onClick={()=>setQa(true)}><ShieldCheck/> Run QA checklist</button>{qa&&<div className="result"><CheckCircle2/> Checklist reviewed. Complete remaining checks and obtain human approval before sending.</div>}</div></>}
-{tab==="Integrations"&&<><p className="intro">Connect your own test services using server-side credentials.</p><div className="integration"><div><b>Klaviyo</b><p>{status.message}</p><span className={status.connected?"status live":"status"}>{status.connected?"Connected":"Not connected"}</span></div><button className="secondary" onClick={()=>fetch("/api/klaviyo/status").then(r=>r.json()).then(setStatus)}>Test connection</button></div><div className="integration"><div><b>Supabase</b><p>Customer, campaign, flow and QA data tables with RLS and synthetic seed records.</p><span className="status live">Project provisioned</span></div><button className="secondary" onClick={()=>fetch("/api/supabase/demo").then(r=>r.json()).then(j=>setSupabase(j.connected?`Connected · ${j.profiles.length} demo profiles`:j.message)).then(()=>setNotice(supabase))}>Test database</button></div><div className="integration"><div><b>AI Gateway</b><p>Optional server-side model integration for campaign copy generation.</p><span className="status">Demo fallback available</span></div></div><div className="security"><ShieldCheck/><div><b>Security by design</b><p>Keep Klaviyo private keys and AI credentials server-side. Start with read-only Klaviyo scopes. Demo data is synthetic; no campaign is sent or flow activated by this portfolio.</p></div></div></>}
-<footer>ARTFLOW AI · KLAVIYO GROWTH INTELLIGENCE <span>Portfolio prototype · Synthetic demo data</span></footer></main></div>}
+import { useCallback, useEffect, useState } from "react";
+import { Activity, Image as ImageIcon, Mail, Plug, ShieldCheck, ShoppingCart, Users, Workflow } from "lucide-react";
+import type { CopyResult, Overview, ProfileItem } from "@/lib/types";
+import type { CopyInput } from "@/lib/copy";
+import OverviewTab from "./components/Overview";
+import Flows from "./components/Flows";
+import Studio from "./components/Studio";
+import Journey from "./components/Journey";
+import Customers from "./components/Customers";
+import QA from "./components/QA";
+import Integrations from "./components/Integrations";
+
+const TABS = ["Overview", "Abandoned cart", "Campaign studio", "Lifecycle flows", "Customers", "AI QA", "Integrations"] as const;
+type Tab = (typeof TABS)[number];
+const ICONS = [<Activity key="a" />, <ShoppingCart key="b" />, <Mail key="c" />, <Workflow key="d" />, <Users key="e" />, <ShieldCheck key="f" />, <Plug key="g" />];
+const INTRO: Record<Tab, string> = {
+  Overview: "Your customer lifecycle marketing at a glance.",
+  "Abandoned cart": "Interactive demo: watch an abandoned-cart flow decide, wait, send and exit for different shoppers.",
+  "Campaign studio": "Generate subject lines and email copy, with automatic checks on every result.",
+  "Lifecycle flows": "Lifecycle automations mapped to Klaviyo flow concepts.",
+  Customers: "Understand lifecycle stages, interests and customer value.",
+  "AI QA": "Deterministic checks plus a human approval gate before anything reaches Klaviyo.",
+  Integrations: "Server-side connections and what each one is allowed to do.",
+};
+
+export default function Home() {
+  const [tab, setTab] = useState<Tab>("Overview");
+  const [data, setData] = useState<Overview | null>(null);
+  const [copy, setCopy] = useState<CopyResult | null>(null);
+  const [input, setInput] = useState<CopyInput>({ product: "Custom pet portrait", audience: "Cart abandoners", offer: "Free digital preview with every order", tone: "Warm" });
+  const [prefill, setPrefill] = useState<{ firstName: string; email: string } | null>(null);
+
+  const load = useCallback(() => { fetch("/api/overview").then((r) => r.json()).then((j) => { if (!j.error) setData(j); }).catch(() => undefined); }, []);
+  useEffect(load, [load]);
+
+  const live = data?.mode === "live" || data?.mode === "partial";
+  const runJourney = (p: ProfileItem) => { setPrefill({ firstName: p.name.split(" ")[0], email: p.email }); setTab("Abandoned cart"); };
+
+  return (
+    <div className="app">
+      <aside className="sidebar">
+        <div className="brand"><div className="brand-icon"><ImageIcon /></div><div><b>artflow<span>ai</span></b><small>GROWTH INTELLIGENCE</small></div></div>
+        <div className="workspace"><div className="avatar">A</div><div><b>ArtFlow Studio</b><small>D2C DEMO WORKSPACE</small></div></div>
+        <label className="navlabel">WORKSPACE</label>
+        <nav>{TABS.map((t, i) => <button key={t} className={tab === t ? "selected" : ""} onClick={() => setTab(t)}>{ICONS[i]}{t}</button>)}</nav>
+        <div className="sidefoot"><span className={live ? "live-dot" : "demo-dot"} /><b>{live ? "Klaviyo connected" : "Demo workspace"}</b><small>{data?.klaviyo.message ?? "Checking…"}</small></div>
+      </aside>
+      <main>
+        <header><div><small>ARTFLOW STUDIO　/　{tab.toUpperCase()}</small><h1>{tab === "Overview" ? "Growth workspace" : tab}</h1></div><div className="topright"><span className={live ? "pill live" : "pill"}>{live ? "LIVE KLAVIYO" : "SYNTHETIC DEMO"}</span></div></header>
+        <p className="intro">{INTRO[tab]}</p>
+        {tab === "Overview" && <OverviewTab data={data} go={setTab} />}
+        {tab === "Abandoned cart" && <Journey prefill={prefill} />}
+        {tab === "Campaign studio" && <Studio input={input} setInput={setInput} copy={copy} setCopy={setCopy} goQA={() => setTab("AI QA")} />}
+        {tab === "Lifecycle flows" && <Flows flows={data?.flows ?? []} openCart={() => setTab("Abandoned cart")} />}
+        {tab === "Customers" && <Customers profiles={data?.profiles ?? []} runJourney={runJourney} />}
+        {tab === "AI QA" && <QA copy={copy} goStudio={() => setTab("Campaign studio")} />}
+        {tab === "Integrations" && <Integrations data={data} refresh={load} />}
+        <footer>ARTFLOW AI · KLAVIYO GROWTH INTELLIGENCE <span>Portfolio prototype · {live ? "Live Klaviyo read access" : "Synthetic demo data"}</span></footer>
+      </main>
+    </div>
+  );
+}

@@ -1,3 +1,4 @@
-import {NextResponse} from "next/server";
-import {klaviyoRequest} from "@/lib/klaviyo";
-export async function GET(){try{const data=await klaviyoRequest<{data?:Array<{id:string;attributes?:{email?:string;first_name?:string;last_name?:string;properties?:Record<string,unknown>}}>}>("/profiles/?page[size]=25");return NextResponse.json({mode:"live",profiles:(data.data??[]).map(p=>({id:p.id,email:p.attributes?.email??"",name:[p.attributes?.first_name,p.attributes?.last_name].filter(Boolean).join(" "),properties:p.attributes?.properties??{}}))});}catch(e){return NextResponse.json({error:e instanceof Error?e.message:"Unable to load profiles."},{status:502});}}
+import { NextResponse } from "next/server";
+import { getOverview } from "@/lib/data";
+export const dynamic = "force-dynamic";
+export async function GET() { const o = await getOverview(); return NextResponse.json({ mode: o.mode, profiles: o.profiles, warnings: o.warnings }); }

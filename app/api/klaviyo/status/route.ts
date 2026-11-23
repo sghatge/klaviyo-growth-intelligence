@@ -1,3 +1,7 @@
-import {NextResponse} from "next/server";
-import {isKlaviyoConfigured,klaviyoRequest} from "@/lib/klaviyo";
-export async function GET(){if(!isKlaviyoConfigured())return NextResponse.json({connected:false,mode:"demo",message:"Demo mode. Add a restricted Klaviyo private key to connect a test account."});try{const data=await klaviyoRequest<{data?:unknown[]}>("/accounts/");return NextResponse.json({connected:true,mode:"live",accounts:data.data?.length??0,message:"Klaviyo authentication successful."});}catch(e){return NextResponse.json({connected:false,mode:"error",message:e instanceof Error?e.message:"Connection failed."},{status:502});}}
+import { NextResponse } from "next/server";
+import { getOverview } from "@/lib/data";
+export const dynamic = "force-dynamic";
+export async function GET() {
+  const o = await getOverview();
+  return NextResponse.json({ connected: o.klaviyo.connected, mode: o.mode, message: o.klaviyo.message, warnings: o.warnings }, { status: o.klaviyo.configured && !o.klaviyo.connected ? 502 : 200 });
+}

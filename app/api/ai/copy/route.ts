@@ -1,3 +1,36 @@
-import {NextRequest,NextResponse} from "next/server";
-const demo=(product:string,audience:string,offer:string)=>({mode:"demo",subject:`A portrait made just for ${audience.toLowerCase()}`,preheader:"Turn a favourite moment into artwork you'll keep forever.",headline:`Your ${product.toLowerCase()}, turned into a keepsake`,body:`Some moments deserve more than a place in your camera roll. Our artists transform your ${product.toLowerCase()} into a personalised piece, created with care. ${offer?offer+".":"Choose your style, upload your photo and let our artists take it from there."}`,cta:"Create your portrait",qa:["Map personalization to verified Klaviyo profile properties.","Confirm offer terms and expiry before publishing.","Check links, mobile rendering and unsubscribe before sending."]});
-export async function POST(req:NextRequest){const p=await req.json().catch(()=>({}));const product=String(p.product??"custom portrait").slice(0,120),audience=String(p.audience??"art lovers").slice(0,120),offer=String(p.offer??"").slice(0,160);const key=process.env.AI_GATEWAY_API_KEY,model=process.env.AI_GATEWAY_MODEL;if(!key||!model)return NextResponse.json(demo(product,audience,offer));try{const r=await fetch("https://ai-gateway.vercel.sh/v1/chat/completions",{method:"POST",headers:{Authorization:`Bearer ${key}`,"Content-Type":"application/json"},body:JSON.stringify({model,temperature:.7,messages:[{role:"system",content:"You are a senior D2C lifecycle email strategist. Return only JSON with subject, preheader, headline, body, cta and qa (array). Never invent discounts, guarantees or customer facts."},{role:"user",content:`Write a premium, human marketing email for ${product}; audience ${audience}; offer ${offer||"none"}.`}]})});if(!r.ok)throw new Error(`AI Gateway ${r.status}`);const j=await r.json(),raw=String(j.choices?.[0]?.message?.content??"").replace(/^```(?:json)?\s*/i,"").replace(/```$/,"").trim();return NextResponse.json({mode:"ai",...JSON.parse(raw)});}catch(e){return NextResponse.json({...demo(product,audience,offer),warning:e instanceof Error?e.message:"AI fallback used."});}}
+import { NextRequest, NextResponse } from "next/server";
+import { demoCopy, parseAiJson, runChecks, type CopyInput } from "@/lib/copy";
+
+export async function POST(req: NextRequest) {
+  const p = (await req.json().catch(() => ({}))) as Record<string, unknown>;
+  const clip = (v: unknown, d: string, n: number) => (typeof v === "string" && v.trim() ? v.trim().slice(0, n) : d);
+  const input: CopyInput = {
+    product: clip(p.product, "custom portrait", 120),
+    audience: clip(p.audience, "art lovers", 120),
+    offer: clip(p.offer, "", 160),
+    tone: clip(p.tone, "Warm", 20),
+  };
+  const key = process.env.AI_GATEWAY_API_KEY, model = process.env.AI_GATEWAY_MODEL;
+  if (!key || !model) return NextResponse.json(demoCopy(input));
+  try {
+    const r = await fetch("https://ai-gateway.vercel.sh/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+      signal: AbortSignal.timeout(25_000),
+      body: JSON.stringify({
+        model, temperature: 0.7,
+        messages: [
+          { role: "system", content: "You are a senior D2C lifecycle email strategist. Return only JSON with: subjects (array of 3 distinct subject lines, each 50 characters or fewer), preheader, headline, body, cta (max 4 words). Never invent discounts, guarantees, deadlines or customer facts. Use only the offer provided." },
+          { role: "user", content: `Write a ${input.tone.toLowerCase()}, human marketing email for ${input.product}; audience: ${input.audience}; offer: ${input.offer || "none"}.` },
+        ],
+      }),
+    });
+    if (!r.ok) throw new Error(`AI Gateway returned ${r.status}`);
+    const j = (await r.json()) as { choices?: Array<{ message?: { content?: string } }> };
+    const parsed = parseAiJson(String(j.choices?.[0]?.message?.content ?? ""));
+    // Our own deterministic checks always run on top of the model output.
+    return NextResponse.json({ mode: "ai", ...parsed, checks: runChecks(parsed, input.offer) });
+  } catch (e) {
+    return NextResponse.json({ ...demoCopy(input), warning: `${e instanceof Error ? e.message : "AI error"}. Showing demo copy instead.` });
+  }
+}
