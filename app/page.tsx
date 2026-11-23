@@ -10,6 +10,7 @@ import Journey from "./components/Journey";
 import Customers from "./components/Customers";
 import QA from "./components/QA";
 import Integrations from "./components/Integrations";
+import VoiceAssistant from "./components/VoiceAssistant";
 
 const TABS = ["Overview", "Abandoned cart", "Campaign studio", "Lifecycle flows", "Customers", "AI QA", "Integrations"] as const;
 type Tab = (typeof TABS)[number];
@@ -56,6 +57,7 @@ export default function Home() {
         {tab === "Customers" && <Customers profiles={data?.profiles ?? []} runJourney={runJourney} />}
         {tab === "AI QA" && <QA copy={copy} goStudio={() => setTab("Campaign studio")} />}
         {tab === "Integrations" && <Integrations data={data} refresh={load} />}
+        <VoiceAssistant />
         <footer>ARTFLOW AI · KLAVIYO GROWTH INTELLIGENCE <span>Portfolio prototype · {live ? "Live Klaviyo read access" : "Synthetic demo data"}</span></footer>
       </main>
     </div>
