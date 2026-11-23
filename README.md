@@ -57,3 +57,14 @@ The project database has tables for customer_profiles, campaign_briefs, lifecycl
 5. Demonstrate the read-only Klaviyo connection and Supabase integration.
 
 This project demonstrates practical Klaviyo learning and transferable CRM/marketing automation skills; it is not a claim of prior years of professional Klaviyo platform experience.
+
+
+## Free Streamlit edition
+
+A Python/Streamlit edition is available on the `streamlit-migration` branch. It preserves the ArtFlow workspace modules and adds a free-hosting deployment path.
+
+- Streamlit app entry point: `streamlit/app.py`
+- Deployment instructions and optional secrets: [STREAMLIT_DEPLOYMENT.md](./STREAMLIT_DEPLOYMENT.md)
+- Deploy on [Streamlit Community Cloud](https://share.streamlit.io/) using branch `streamlit-migration` and main file `streamlit/app.py`.
+
+The original Next.js/Vercel app remains on `main` unchanged. The Streamlit version uses synthetic demo data by default; live Klaviyo, Supabase and Gemini connections are optional.
