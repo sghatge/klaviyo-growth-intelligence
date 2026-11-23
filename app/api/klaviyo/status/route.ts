@@ -1,0 +1,3 @@
+import {NextResponse} from "next/server";
+import {isKlaviyoConfigured,klaviyoRequest} from "@/lib/klaviyo";
+export async function GET(){if(!isKlaviyoConfigured())return NextResponse.json({connected:false,mode:"demo",message:"Demo mode. Add a restricted Klaviyo private key to connect a test account."});try{const data=await klaviyoRequest<{data?:unknown[]}>("/accounts/");return NextResponse.json({connected:true,mode:"live",accounts:data.data?.length??0,message:"Klaviyo authentication successful."});}catch(e){return NextResponse.json({connected:false,mode:"error",message:e instanceof Error?e.message:"Connection failed."},{status:502});}}
