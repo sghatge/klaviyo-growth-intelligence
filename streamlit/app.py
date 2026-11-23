@@ -204,7 +204,7 @@ def make_copy(product: str, audience: str, offer: str, tone: str) -> dict:
     if api_key:
         try:
             brief = f"Create ethical D2C email copy for product={product}; audience={audience}; offer={offer}; tone={tone}. Return JSON only with keys subjects (array of exactly 3), preheader, headline, body, cta. No invented discounts, scarcity or unsupported claims. Keep copy concise."
-            response = requests.post(f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}",json={"contents":[{"parts":[{"text":brief}]}],"generationConfig":{"temperature":0.55,"maxOutputTokens":600,"responseMimeType":"application/json"}},timeout=25)
+            response = requests.post(f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}",json={"contents":[{"parts":[{"text":brief}]}],"generationConfig":{"temperature":0.55,"maxOutputTokens":600,"responseMimeType":"application/json"}},timeout=25)
             response.raise_for_status()
             raw = response.json()["candidates"][0]["content"]["parts"][0]["text"]
             generated = json.loads(raw)
@@ -243,7 +243,7 @@ def assistant_answer(question: str, context: dict) -> tuple[str,str]:
     if api_key:
         try:
             prompt = ("You are ArtFlow AI, a concise D2C lifecycle marketing copilot. Use only the workspace context below for factual claims. Clearly identify synthetic/demo data. Never claim to send campaigns or activate flows. No customer personal data. Answer in 2-5 sentences.\n\nContext: "+json.dumps(context)+"\n\nQuestion: "+question)
-            r = requests.post(f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}",json={"contents":[{"parts":[{"text":prompt}]}],"generationConfig":{"temperature":0.35,"maxOutputTokens":350}},timeout=20)
+            r = requests.post(f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}",json={"contents":[{"parts":[{"text":prompt}]}],"generationConfig":{"temperature":0.35,"maxOutputTokens":350}},timeout=20)
             r.raise_for_status()
             answer = r.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
             return answer,"Gemini AI"
@@ -290,7 +290,7 @@ if klaviyo_key_present:
         warnings.append(f"Klaviyo read failed; showing synthetic data. ({str(exc)[:160]})")
         connection_message = "Klaviyo key configured, but connection could not be verified."
 
-supabase_counts = get_supabase_counts()
+supabase_counts = {"customer_profiles":len(supabase_snapshot["profiles"]),"campaign_metrics":len(supabase_snapshot["campaigns"]),"lifecycle_flows":len(supabase_snapshot["flows"])} if supabase_snapshot else None
 demo_revenue = sum(x["revenue"] for x in DEMO_CAMPAIGNS)
 demo_orders = sum(x["orders"] for x in DEMO_CAMPAIGNS)
 flow_revenue = sum(x["revenue"] for x in DEMO_CAMPAIGNS if x["status"]=="flow")
