@@ -110,20 +110,35 @@ def get_klaviyo_snapshot() -> dict:
         "profiles":[{"id":x.get("id"),"name":" ".join(filter(None,[x.get("attributes",{}).get("first_name"),x.get("attributes",{}).get("last_name")])) or "Unnamed profile","email":x.get("attributes",{}).get("email",""),"segment":x.get("attributes",{}).get("properties",{}).get("segment","—"),"interest":x.get("attributes",{}).get("properties",{}).get("interest","—"),"ltv":x.get("attributes",{}).get("predictive_analytics",{}).get("historic_clv")} for x in profiles],
     }
 
-def get_supabase_counts() -> dict | None:
-    url, key = secret("SUPABASE_URL") or secret("NEXT_PUBLIC_SUPABASE_URL"), secret("SUPABASE_ANON_KEY") or secret("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY")
+def get_supabase_snapshot() -> dict | None:
+    url = secret("SUPABASE_URL") or secret("NEXT_PUBLIC_SUPABASE_URL")
+    key = secret("SUPABASE_ANON_KEY") or secret("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY")
     if not url or not key:
         return None
     headers = {"apikey":key,"Authorization":f"Bearer {key}"}
     try:
-        out = {}
-        for table in ("customer_profiles","campaign_metrics","lifecycle_flows"):
-            r = requests.get(f"{url}/rest/v1/{table}?select=id&is_demo=eq.true",headers=headers,timeout=10)
-            r.raise_for_status()
-            out[table] = len(r.json())
-        return out
+        def rows(table: str, query: str) -> list[dict]:
+            response = requests.get(f"{url}/rest/v1/{table}?{query}",headers=headers,timeout=12)
+            response.raise_for_status()
+            return response.json()
+        p = rows("customer_profiles","select=id,email,first_name,last_name,segment,interests,lifetime_value&is_demo=eq.true&order=lifetime_value.desc&limit=20")
+        m = rows("campaign_metrics","select=id,campaign_name,sent,clicks,orders,attributed_revenue&is_demo=eq.true&order=metric_date.desc&limit=20")
+        f = rows("lifecycle_flows","select=flow_key,name,trigger_event,status,email_count&is_demo=eq.true&limit=20")
+        if not (p and m and f):
+            return None
+        return {
+            "profiles":[{"id":r["id"],"email":r.get("email",""),"name":" ".join(filter(None,[r.get("first_name"),r.get("last_name")])) or "Unnamed profile","segment":r.get("segment") or "—","interest":", ".join(r.get("interests") or []) or "—","ltv":float(r.get("lifetime_value") or 0)} for r in p],
+            "campaigns":[{"id":r["id"],"name":r.get("campaign_name","Untitled campaign"),"status":"flow" if r.get("campaign_name") in {x["name"] for x in DEMO_FLOWS} else "campaign","sent":r.get("sent"),"clicks":r.get("clicks"),"orders":r.get("orders"),"revenue":float(r.get("attributed_revenue") or 0)} for r in m],
+            "flows":[{"id":r.get("flow_key"),"name":r.get("name","Untitled flow"),"status":r.get("status","unknown"),"trigger":r.get("trigger_event","Not specified"),"emails":r.get("email_count")} for r in f],
+        }
     except Exception:
         return None
+
+def get_supabase_counts() -> dict | None:
+    snapshot = get_supabase_snapshot()
+    if not snapshot:
+        return None
+    return {"customer_profiles":len(snapshot["profiles"]),"campaign_metrics":len(snapshot["campaigns"]),"lifecycle_flows":len(snapshot["flows"])}
 
 def money(v: float) -> str:
     return "£" + f"{v:,.0f}"
@@ -185,6 +200,19 @@ def simulate_cart(first_name: str, product: str, value: float, consent: bool, or
 
 # ---------- Campaign copy + QA ----------
 def make_copy(product: str, audience: str, offer: str, tone: str) -> dict:
+    api_key = secret("GEMINI_API_KEY") or secret("GOOGLE_API_KEY")
+    if api_key:
+        try:
+            brief = f"Create ethical D2C email copy for product={product}; audience={audience}; offer={offer}; tone={tone}. Return JSON only with keys subjects (array of exactly 3), preheader, headline, body, cta. No invented discounts, scarcity or unsupported claims. Keep copy concise."
+            response = requests.post(f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}",json={"contents":[{"parts":[{"text":brief}]}],"generationConfig":{"temperature":0.55,"maxOutputTokens":600,"responseMimeType":"application/json"}},timeout=25)
+            response.raise_for_status()
+            raw = response.json()["candidates"][0]["content"]["parts"][0]["text"]
+            generated = json.loads(raw)
+            if len(generated.get("subjects",[])) == 3 and generated.get("body") and generated.get("cta"):
+                generated["mode"]="ai"
+                return generated
+        except Exception:
+            pass
     greeting = {"Warm":"A thoughtful little reminder","Premium":"A considered piece, made just for you","Playful":"Your future favourite artwork is waiting","Direct":"Your saved artwork is ready"}[tone]
     return {
         "subjects":[f"Your {product} is waiting",f"A little more about your {product}",f"{offer} — just for you"],
@@ -249,6 +277,10 @@ with st.sidebar:
 # ---------- Data loading ----------
 flows, campaigns, profiles = DEMO_FLOWS.copy(), DEMO_CAMPAIGNS.copy(), DEMO_PROFILES.copy()
 data_mode, connection_message, warnings = "demo", "Demo mode. Add a restricted Klaviyo private API key to connect a test account.", []
+supabase_snapshot = get_supabase_snapshot()
+if supabase_snapshot:
+    flows, campaigns, profiles = supabase_snapshot["flows"], supabase_snapshot["campaigns"], supabase_snapshot["profiles"]
+    data_mode, connection_message = "supabase-demo", "Supabase synthetic demo tables connected. Klaviyo remains read-only and optional."
 if klaviyo_key_present:
     try:
         snap = get_klaviyo_snapshot()
