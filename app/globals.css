@@ -68,3 +68,32 @@ tbody tr{cursor:pointer}tbody tr:hover,tbody tr.sel{background:#f8f6ff}
 @media(max-width:1350px){.jwrap{grid-template-columns:300px 1fr}.jside{grid-column:1/-1;grid-template-columns:repeat(3,1fr)}}
 @media(max-width:900px){.jwrap{grid-template-columns:1fr}.jside{grid-template-columns:1fr}.bar{grid-template-columns:110px 1fr 70px}.jstats{grid-template-columns:1fr 1fr}.jstats .jstatus{grid-column:1/-1}}
 .jbranch .jtime{display:none}.jbranch .jtext b{font-size:11px}
+
+
+/* ArtFlow AI voice assistant */
+.voice-agent{position:fixed;right:26px;bottom:24px;z-index:80;font-family:'DM Sans',sans-serif}
+.voice-launcher{display:flex;align-items:center;gap:9px;border:0;border-radius:999px;background:#28263c;color:#fff;padding:14px 18px;box-shadow:0 12px 35px #28263c35;font:700 12px 'DM Sans';cursor:pointer}
+.voice-launcher svg{color:#c9c0ff}.voice-launcher.is-open{padding:13px;border-radius:50%}
+.voice-window{position:absolute;right:0;bottom:68px;width:min(390px,calc(100vw - 32px));height:min(570px,calc(100vh - 125px));display:flex;flex-direction:column;background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:0 22px 70px #28263c30;overflow:hidden}
+.voice-head{display:flex;align-items:center;gap:10px;padding:15px;border-bottom:1px solid var(--line);background:#fcfbff}
+.voice-avatar{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;background:var(--pale);color:var(--purple)}
+.voice-heading{flex:1}.voice-heading b{display:block;font:700 12px Manrope}.voice-heading small{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:10px;margin-top:3px}
+.voice-dot,.voice-live-dot{width:7px;height:7px;border-radius:50%;background:#aaa;display:inline-block}.voice-live-dot{background:#20a77a;box-shadow:0 0 0 3px #20a77a20}
+.voice-icon-btn{border:0;background:transparent;color:#777587;padding:6px;border-radius:7px;cursor:pointer;display:grid;place-items:center}.voice-icon-btn:hover{background:#f0eef8}
+.voice-messages{flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:13px;background:#fff}
+.voice-message{display:flex;align-items:flex-start;gap:7px;max-width:91%}.voice-message p{margin:0;padding:11px 12px;border-radius:12px;background:#f5f3fb;color:#454258;font-size:12px;line-height:1.6;white-space:pre-wrap}
+.voice-message.user{align-self:flex-end}.voice-message.user p{background:#7161d8;color:#fff;border-bottom-right-radius:4px}
+.voice-message.assistant p{border-bottom-left-radius:4px}.voice-message-icon{width:24px;height:24px;flex:none;display:grid;place-items:center;border-radius:8px;background:var(--pale);color:var(--purple)}
+.voice-thinking{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:11px;padding-left:30px}.voice-thinking svg{animation:voice-spin 1s linear infinite}
+@keyframes voice-spin{to{transform:rotate(360deg)}}
+.voice-error{margin:0 14px 8px;padding:9px 10px;background:#fff2ef;color:#a3392b;border-radius:8px;font-size:10px;line-height:1.5}
+.voice-controls{display:flex;align-items:center;gap:9px;padding:12px 14px;border-top:1px solid var(--line)}
+.voice-mic{width:42px;height:42px;flex:none;border:0;border-radius:50%;display:grid;place-items:center;background:var(--purple);color:#fff;cursor:pointer}
+.voice-mic.recording{background:#d94c58;box-shadow:0 0 0 5px #d94c5820;animation:voice-pulse 1.4s infinite}
+@keyframes voice-pulse{50%{box-shadow:0 0 0 9px #d94c580a}}
+.voice-form{display:flex;align-items:center;gap:6px;flex:1;min-width:0;border:1px solid var(--line);border-radius:10px;padding:4px 5px 4px 11px}
+.voice-form input{border:0;outline:0;min-width:0;flex:1;font:12px 'DM Sans';color:var(--ink);padding:7px 0;background:transparent}
+.voice-form button{width:31px;height:31px;border:0;border-radius:8px;background:var(--pale);color:var(--purple);display:grid;place-items:center;cursor:pointer}
+.voice-form button:disabled{opacity:.35}
+.voice-footnote{text-align:center;padding:0 12px 11px;color:#aaa8b5;font-size:9px}
+@media(max-width:760px){.voice-agent{right:14px;bottom:14px}.voice-window{right:0;bottom:62px;height:min(570px,calc(100dvh - 100px))}.voice-launcher{padding:13px 15px}}
