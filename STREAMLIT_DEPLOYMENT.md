@@ -2,6 +2,15 @@
 
 This folder contains the Python/Streamlit edition of the ArtFlow AI – Klaviyo Growth Intelligence portfolio prototype.
 
+## Live deployment
+
+**Published app:** https://artflow-ai.streamlit.app/
+
+The app is deployed on Streamlit Community Cloud from:
+- Repository: `sghatge/klaviyo-growth-intelligence`
+- Branch: `streamlit-migration`
+- Main file: `streamlit/app.py`
+
 ## Deploy free on Streamlit Community Cloud
 
 1. Push this repository/branch to GitHub.
